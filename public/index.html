@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL Health Checker</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>URL Health Checker</h1>
+        <button class="btn btn-primary" id="addUrlBtn">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add URL
+        </button>
+      </header>
+
+      <div class="card">
+        <table class="url-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>URL</th>
+              <th>Status</th>
+              <th>Last Checked</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="urlList">
+            <!-- URLs will be injected here -->
+            <tr>
+              <td
+                colspan="5"
+                style="
+                  text-align: center;
+                  padding: 3rem;
+                  color: var(--text-muted);
+                "
+              >
+                Loading URLs...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="urlModal">
+      <div class="modal">
+        <h2 id="modalTitle" style="margin-bottom: 2rem">Add New URL</h2>
+        <form id="urlForm">
+          <input type="hidden" id="urlId" />
+          <div class="form-group">
+            <label for="name">Friendly Name</label>
+            <input type="text" id="name" placeholder="My Website" required />
+          </div>
+          <div class="form-group">
+            <label for="url">URL</label>
+            <input
+              type="url"
+              id="url"
+              placeholder="https://example.com"
+              required
+            />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="closeModal">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">
+              Save URL
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

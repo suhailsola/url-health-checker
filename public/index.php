@@ -39,7 +39,18 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Dispatch the request
 try {
-    $router->dispatch($method, $uri);
+    if (str_starts_with($uri, '/api/')) {
+        $router->dispatch($method, $uri);
+    } else {
+        // Serve the frontend index.html for all non-API routes
+        $indexPath = __DIR__ . '/index.html';
+        if (file_exists($indexPath)) {
+            readfile($indexPath);
+        } else {
+            // Fallback or development message
+            echo "<h1>URL Health Checker API</h1><p>API is running. Frontend not found.</p>";
+        }
+    }
 } catch (Exception $e) {
     http_response_code(500);
     header('Content-Type: application/json');
