@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'driver' => $_ENV['DB_DRIVER'] ?? 'pgsql',
-    'host' => $_ENV['DB_HOST'] ?? 'localhost',
-    'port' => $_ENV['DB_PORT'] ?? 5432,
-    'database' => $_ENV['DB_NAME'] ?? 'url_health_checker',
-    'username' => $_ENV['DB_USER'] ?? 'postgres',
-    'password' => $_ENV['DB_PASSWORD'] ?? '',
+    'driver' => $_ENV['DB_DRIVER'] ?? getenv('DB_DRIVER') ?: 'pgsql',
+    'host' => $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost',
+    'port' => $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: 5432,
+    'database' => $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'url_health_checker',
+    'username' => $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'postgres',
+    'password' => $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: '',
     'charset' => 'utf8',
     'options' => [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
