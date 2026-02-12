@@ -18,17 +18,17 @@ class Router
     public function dispatch(string $method, string $uri): void
     {
         $method = strtoupper($method);
-        
+
         foreach ($this->routes as $route) {
             if ($route['method'] !== $method) {
                 continue;
             }
 
             $pattern = $this->convertPathToRegex($route['path']);
-            
+
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches); // Remove full match
-                
+
                 $this->sendResponse(
                     call_user_func_array($route['handler'], $matches)
                 );

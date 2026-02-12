@@ -17,7 +17,7 @@ class Connection
     {
         if (self::$instance === null) {
             $config = require __DIR__ . '/../../config/database.php';
-            
+
             $dsn = sprintf(
                 '%s:host=%s;port=%s;dbname=%s',
                 $config['driver'],

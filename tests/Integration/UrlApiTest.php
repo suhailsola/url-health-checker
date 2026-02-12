@@ -20,13 +20,13 @@ class UrlApiTest extends TestCase
         curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        
+
         if ($httpCode === 0) {
             $this->markTestSkipped(
                 'Integration tests require a running server. Start with: php -S localhost:8000 -t public'
             );
         }
-        
+
         // Setup test database
         $this->pdo = new PDO(
             sprintf(
@@ -38,9 +38,9 @@ class UrlApiTest extends TestCase
             $_ENV['DB_USER'],
             $_ENV['DB_PASSWORD']
         );
-        
+
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
+
         // Clean and recreate tables
         $this->pdo->exec("
             DROP TABLE IF EXISTS urls CASCADE;
@@ -66,19 +66,19 @@ class UrlApiTest extends TestCase
     private function makeRequest(string $method, string $endpoint, ?array $data = null): array
     {
         $ch = curl_init($this->baseUrl . $endpoint);
-        
+
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        
+
         if ($data !== null) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
-        
+
         $response = curl_exec($ch);
         $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        
+
         return [
             'status' => $statusCode,
             'body' => json_decode($response, true),
@@ -91,7 +91,7 @@ class UrlApiTest extends TestCase
             'url' => 'https://example.com',
             'name' => 'Example',
         ]);
-        
+
         $this->assertEquals(201, $response['status']);
         $this->assertArrayHasKey('data', $response['body']);
         $this->assertEquals('https://example.com', $response['body']['data']['url']);
@@ -103,7 +103,7 @@ class UrlApiTest extends TestCase
         $response = $this->makeRequest('POST', '/urls', [
             'url' => 'https://google.com',
         ]);
-        
+
         $this->assertEquals(201, $response['status']);
         $this->assertNull($response['body']['data']['name']);
     }
@@ -113,7 +113,7 @@ class UrlApiTest extends TestCase
         $response = $this->makeRequest('POST', '/urls', [
             'url' => 'invalid-url',
         ]);
-        
+
         $this->assertEquals(400, $response['status']);
         $this->assertArrayHasKey('error', $response['body']);
     }
@@ -123,9 +123,9 @@ class UrlApiTest extends TestCase
         // Create some URLs first
         $this->makeRequest('POST', '/urls', ['url' => 'https://example.com']);
         $this->makeRequest('POST', '/urls', ['url' => 'https://google.com']);
-        
+
         $response = $this->makeRequest('GET', '/urls');
-        
+
         $this->assertEquals(200, $response['status']);
         $this->assertArrayHasKey('data', $response['body']);
         $this->assertCount(2, $response['body']['data']);
@@ -137,10 +137,10 @@ class UrlApiTest extends TestCase
         $created = $this->makeRequest('POST', '/urls', [
             'url' => 'https://example.com',
         ]);
-        
+
         $id = $created['body']['data']['id'];
         $response = $this->makeRequest('GET', "/urls/{$id}");
-        
+
         $this->assertEquals(200, $response['status']);
         $this->assertEquals('https://example.com', $response['body']['data']['url']);
     }
@@ -148,7 +148,7 @@ class UrlApiTest extends TestCase
     public function testGetUrlNotFound(): void
     {
         $response = $this->makeRequest('GET', '/urls/999');
-        
+
         $this->assertEquals(404, $response['status']);
         $this->assertArrayHasKey('error', $response['body']);
     }
@@ -158,12 +158,12 @@ class UrlApiTest extends TestCase
         $created = $this->makeRequest('POST', '/urls', [
             'url' => 'https://example.com',
         ]);
-        
+
         $id = $created['body']['data']['id'];
         $response = $this->makeRequest('PUT', "/urls/{$id}", [
             'name' => 'Updated Name',
         ]);
-        
+
         $this->assertEquals(200, $response['status']);
         $this->assertEquals('Updated Name', $response['body']['data']['name']);
     }
@@ -173,12 +173,12 @@ class UrlApiTest extends TestCase
         $created = $this->makeRequest('POST', '/urls', [
             'url' => 'https://example.com',
         ]);
-        
+
         $id = $created['body']['data']['id'];
         $response = $this->makeRequest('DELETE', "/urls/{$id}");
-        
+
         $this->assertEquals(200, $response['status']);
-        
+
         // Verify it's deleted
         $getResponse = $this->makeRequest('GET', "/urls/{$id}");
         $this->assertEquals(404, $getResponse['status']);

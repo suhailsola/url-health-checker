@@ -51,7 +51,7 @@ class UrlController
     {
         try {
             $urls = $this->repository->findAll();
-            
+
             return [
                 'data' => array_map(fn($url) => $url->toArray(), $urls),
                 'count' => count($urls),

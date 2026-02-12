@@ -26,9 +26,9 @@ class UrlRepositoryTest extends TestCase
             $_ENV['DB_USER'],
             $_ENV['DB_PASSWORD']
         );
-        
+
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
+
         // Create tables
         $this->pdo->exec("
             DROP TABLE IF EXISTS urls CASCADE;
@@ -44,7 +44,7 @@ class UrlRepositoryTest extends TestCase
                 CONSTRAINT status_check CHECK (status IN ('pending', 'online', 'offline'))
             );
         ");
-        
+
         $this->repository = new UrlRepository($this->pdo);
     }
 
@@ -56,7 +56,7 @@ class UrlRepositoryTest extends TestCase
     public function testCreateUrl(): void
     {
         $url = $this->repository->create('https://example.com', 'Example Site');
-        
+
         $this->assertInstanceOf(Url::class, $url);
         $this->assertEquals('https://example.com', $url->url);
         $this->assertEquals('Example Site', $url->name);
@@ -68,9 +68,9 @@ class UrlRepositoryTest extends TestCase
     {
         $this->repository->create('https://example.com');
         $this->repository->create('https://google.com');
-        
+
         $urls = $this->repository->findAll();
-        
+
         $this->assertCount(2, $urls);
         $this->assertContainsOnlyInstancesOf(Url::class, $urls);
     }
@@ -79,7 +79,7 @@ class UrlRepositoryTest extends TestCase
     {
         $created = $this->repository->create('https://example.com');
         $found = $this->repository->findById($created->id);
-        
+
         $this->assertNotNull($found);
         $this->assertEquals($created->id, $found->id);
         $this->assertEquals('https://example.com', $found->url);
@@ -88,20 +88,20 @@ class UrlRepositoryTest extends TestCase
     public function testFindByIdNotFound(): void
     {
         $found = $this->repository->findById(999);
-        
+
         $this->assertNull($found);
     }
 
     public function testUpdate(): void
     {
         $url = $this->repository->create('https://example.com');
-        
+
         $updated = $this->repository->update($url->id, [
             'name' => 'Updated Name',
             'status' => 'online',
             'last_status_code' => 200,
         ]);
-        
+
         $this->assertNotNull($updated);
         $this->assertEquals('Updated Name', $updated->name);
         $this->assertEquals('online', $updated->status);
@@ -111,10 +111,10 @@ class UrlRepositoryTest extends TestCase
     public function testDelete(): void
     {
         $url = $this->repository->create('https://example.com');
-        
+
         $deleted = $this->repository->delete($url->id);
         $this->assertTrue($deleted);
-        
+
         $found = $this->repository->findById($url->id);
         $this->assertNull($found);
     }

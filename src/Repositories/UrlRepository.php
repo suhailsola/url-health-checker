@@ -36,12 +36,12 @@ class UrlRepository
     {
         $sql = "SELECT * FROM urls ORDER BY created_at DESC";
         $stmt = $this->pdo->query($sql);
-        
+
         $urls = [];
         while ($row = $stmt->fetch()) {
             $urls[] = $this->mapRowToUrl($row);
         }
-        
+
         return $urls;
     }
 
@@ -50,7 +50,7 @@ class UrlRepository
         $sql = "SELECT * FROM urls WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
-        
+
         $row = $stmt->fetch();
         return $row ? $this->mapRowToUrl($row) : null;
     }
@@ -87,7 +87,7 @@ class UrlRepository
         $sql = "DELETE FROM urls WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
-        
+
         return $stmt->rowCount() > 0;
     }
 
