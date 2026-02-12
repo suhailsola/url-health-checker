@@ -1,0 +1,116 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test (PHP ${{ matrix.php-version }})
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2', '8.3']
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: url_health_checker_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo, pdo_pgsql, mbstring, json
+          coverage: xdebug
+      
+      - name: Validate composer.json
+        run: composer validate --strict
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+      
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          echo "DB_PASSWORD=postgres" >> .env
+      
+      - name: Run database migrations
+        run: php scripts/migrate.php
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: url_health_checker_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+      
+      - name: Run unit tests
+        run: composer test:unit
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: url_health_checker_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+      
+      - name: Generate code coverage
+        if: matrix.php-version == '8.3'
+        run: composer test -- --coverage-clover coverage.xml
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: url_health_checker_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+      
+      - name: Upload coverage to Codecov
+        if: matrix.php-version == '8.3'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+      
+      - name: Run PHP CodeSniffer
+        run: composer cs-check
